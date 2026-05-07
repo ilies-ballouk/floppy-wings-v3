@@ -31,7 +31,7 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script src="https://www.paypal.com/sdk/js?client-id=AUnN91sryTHcqYsWqtykkRix3Jc7gzYUjceVeFS7vJbWwe5OmsImQm0e3hkucGs6AF3EUztGtDo8meP9&currency=EUR&disable-funding=credit,card" data-sdk-integration-source="button-factory"></script>
+<script src="https://www.paypal.com/sdk/js?client-id=AZDxjDScFpQtjWTOUtWKbyN_bDt4OgqaF4eYXlewfBP4-8iqX4NwW_qgxex6e2LmcFRLwGBSMQnpw2-&currency=EUR&disable-funding=credit,card" data-sdk-integration-source="button-factory"></script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -462,7 +462,7 @@ canvas{display:block;image-rendering:pixelated;max-height:100dvh;max-width:100vw
 
 <script>
 /* ═══════════════════════════════════════════════
-   FLOPPY WINGS v9
+   FLOPPY WINGS v9 — Zombie / Pirate / Taureau
    – Classement en ligne Supabase
    – Upgrades niveau 5 (flap+50%, légèreté-30%, ralenti-25%)
    – Suppression du système de pause
@@ -683,6 +683,19 @@ const SKINS=[
    body:['#1a1a1a','#222222','#111111'],wing:'#333333',beak:'#cc0000',cheek:'#880000',stroke:'#000000',
    trail:'#cc0000',ta:.40,trailLen:8,trailMode:'ninja',fx:'ninja',
    trailColors:['#cc0000','#880000','#ff4444','#440000']},
+  /* ── SKINS SPÉCIAUX v9 ── */
+  {id:'zombie',name:'ZOMBIE\nPUTRÉFIÉ',price:700,
+   body:['#d4ffb0','#4a9a20','#1d5208'],wing:'#2d7210',beak:'#2d6618',cheek:'rgba(50,180,30,0.8)',stroke:'#1a4a0a',
+   trail:'#6aee30',ta:.38,trailLen:12,trailMode:'zombie',fx:'zombie',
+   trailColors:['#6aee30','#3aaa10','#a0ff60','#c8ffb0']},
+  {id:'pirate',name:'PIRATE\nDES MERS',price:800,
+   body:['#f5d8a0','#c07820','#6a3a00'],wing:'#8a4800',beak:'#e06000',cheek:'rgba(200,100,20,0.8)',stroke:'#5a3000',
+   trail:'#ffd700',ta:.42,trailLen:13,trailMode:'pirate',fx:'pirate',
+   trailColors:['#ffd700','#c89000','#ffe680','#fff0b0']},
+  {id:'taureau',name:'TAUREAU\nRAGE MODE',price:800,
+   body:['#ffb0b0','#e80000','#6b0000'],wing:'#bb0000',beak:'#ff6600',cheek:'rgba(255,0,0,0.8)',stroke:'#6b0000',
+   trail:'#ff3300',ta:.45,trailLen:14,trailMode:'taureau',fx:'taureau',
+   trailColors:['#ff3300','#ff8800','#cc0000','#ff6600']},
 ];
 
 /* ── WORLDS ── */
@@ -874,6 +887,95 @@ class Bird{
           ctx.restore();
         }
         ctx.restore();
+
+      } else if(mode==='zombie'){
+        // Gouttes de poison qui tombent
+        ctx.globalAlpha=sa(prog*.5);
+        ctx.fillStyle=col;
+        const zs=s*(.07+prog*.12);
+        ctx.save();ctx.translate(t.x,t.y+zs*.4*prog);
+        ctx.beginPath();
+        ctx.arc(0,0,zs,0,Math.PI*2);ctx.fill();
+        // Petite goutte qui pend
+        if(i<5){
+          ctx.globalAlpha=sa(prog*.35);
+          ctx.beginPath();
+          ctx.moveTo(-zs*.3,zs);ctx.lineTo(0,zs*1.8);ctx.lineTo(zs*.3,zs);ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+        // Mini crâne tous les 3
+        if(i%3===0&&i<9){
+          ctx.globalAlpha=sa(prog*.3);
+          ctx.fillStyle='rgba(220,255,200,0.6)';
+          ctx.beginPath();ctx.arc(t.x,t.y-zs,zs*.6,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle='rgba(20,60,10,0.8)';
+          ctx.beginPath();ctx.arc(t.x-zs*.2,t.y-zs-zs*.1,zs*.15,0,Math.PI*2);ctx.fill();
+          ctx.beginPath();ctx.arc(t.x+zs*.2,t.y-zs-zs*.1,zs*.15,0,Math.PI*2);ctx.fill();
+        }
+
+      } else if(mode==='pirate'){
+        // Pièces d'or qui tourbillonnent
+        ctx.globalAlpha=sa(prog*.5);
+        ctx.fillStyle=col;
+        const ps=s*(.09+prog*.11);
+        ctx.save();ctx.translate(t.x,t.y);ctx.rotate(t.ph*2+i*.8);
+        // Pièce (ellipse aplatie = coin vue de face/profil)
+        ctx.beginPath();ctx.ellipse(0,0,ps,ps*(.3+prog*.5),0,0,Math.PI*2);ctx.fill();
+        // Brillance
+        ctx.globalAlpha=sa(prog*.3);
+        ctx.fillStyle='#fff';
+        ctx.beginPath();ctx.ellipse(-ps*.2,-ps*.15,ps*.25,ps*.1,-.4,0,Math.PI*2);ctx.fill();
+        ctx.restore();
+        // Étoile bling tous les 4
+        if(i%4===0&&i<10){
+          ctx.globalAlpha=sa(prog*.4);
+          ctx.fillStyle='rgba(255,240,100,0.7)';
+          const ss=s*.06;
+          ctx.save();ctx.translate(t.x+ss*2,t.y-ss);ctx.rotate(t.ph+i);
+          for(let k=0;k<5;k++){
+            const a=k*Math.PI*2/5-Math.PI/2;
+            const a2=a+Math.PI/5;
+            if(k===0)ctx.beginPath();
+            ctx.lineTo(Math.cos(a)*ss,Math.sin(a)*ss);
+            ctx.lineTo(Math.cos(a2)*ss*.4,Math.sin(a2)*ss*.4);
+          }
+          ctx.closePath();ctx.fill();
+          ctx.restore();
+        }
+
+      } else if(mode==='taureau'){
+        // Flammes et éclairs de rage
+        ctx.globalAlpha=sa(prog*.55);
+        ctx.fillStyle=col;
+        const ts=s*(.08+prog*.14);
+        ctx.save();ctx.translate(t.x,t.y);
+        // Flamme irrégulière
+        ctx.rotate(Math.sin(t.ph+i)*.2);
+        ctx.beginPath();
+        ctx.moveTo(0,ts*.8);
+        ctx.quadraticCurveTo(-ts*.4,0,-ts*.15,-ts*.6);
+        ctx.quadraticCurveTo(0,-ts,ts*.15,-ts*.6);
+        ctx.quadraticCurveTo(ts*.4,0,0,ts*.8);
+        ctx.closePath();ctx.fill();
+        // Cœur brillant
+        if(i<4){
+          ctx.globalAlpha=sa(prog*.4);
+          ctx.fillStyle='#ffcc00';
+          ctx.beginPath();ctx.ellipse(0,-ts*.3,ts*.3,ts*.45,0,0,Math.PI*2);ctx.fill();
+        }
+        ctx.restore();
+        // Éclair tous les 3
+        if(i%3===0&&i<10){
+          ctx.globalAlpha=sa(prog*.5);
+          ctx.strokeStyle='rgba(255,220,0,0.8)';ctx.lineWidth=s*.035;
+          ctx.beginPath();
+          ctx.moveTo(t.x+ts,t.y-ts*1.2);
+          ctx.lineTo(t.x+ts*.5,t.y-ts*.4);
+          ctx.lineTo(t.x+ts*1.1,t.y-ts*.4);
+          ctx.lineTo(t.x+ts*.4,t.y+ts*.6);
+          ctx.stroke();
+        }
       }
     }
     ctx.globalAlpha=1;
@@ -933,6 +1035,43 @@ class Bird{
       ctx.globalAlpha=sa(ba);
     }
 
+    // FX zombie: cicatrice + bandage + vapeur verte
+    if(sk.fx==='zombie'){
+      // Vapeur verte pulsante
+      ctx.globalAlpha=sa(.18*Math.abs(Math.sin(this.ph*1.2)));
+      ctx.fillStyle='#6aee30';
+      ctx.beginPath();ctx.ellipse(s*.18,-s*.42,s*.12,s*.18,Math.sin(this.ph)*.3,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=sa(.10*Math.abs(Math.sin(this.ph*1.8)));
+      ctx.beginPath();ctx.ellipse(s*.28,-s*.48,s*.08,s*.12,0,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=sa(ba);
+    }
+    // FX pirate: éclat doré (reflet sabre)
+    if(sk.fx==='pirate'){
+      ctx.globalAlpha=sa(.22*Math.abs(Math.sin(this.ph*0.8)));
+      ctx.fillStyle='#ffd700';
+      ctx.beginPath();ctx.arc(-s*.3,s*.25,s*.07,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=sa(.12*Math.abs(Math.sin(this.ph*1.4)));
+      ctx.strokeStyle='#ffd700';ctx.lineWidth=s*.025;
+      ctx.beginPath();ctx.arc(0,0,s*.62,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha=sa(ba);
+    }
+    // FX taureau: vapeur des naseaux + ondes de choc
+    if(sk.fx==='taureau'){
+      // Ondes de colère
+      const r1=s*(.7+.15*Math.abs(Math.sin(this.ph)));
+      ctx.globalAlpha=sa(.12*Math.abs(Math.sin(this.ph)));
+      ctx.strokeStyle='#ff3300';ctx.lineWidth=s*.035;
+      ctx.beginPath();ctx.arc(0,0,r1,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha=sa(.07*Math.abs(Math.sin(this.ph+1)));
+      ctx.beginPath();ctx.arc(0,0,r1*1.2,0,Math.PI*2);ctx.stroke();
+      // Vapeur naseau
+      ctx.globalAlpha=sa(.25*Math.abs(Math.sin(this.ph*2)));
+      ctx.fillStyle='#ff6600';
+      ctx.beginPath();ctx.ellipse(-s*.08,s*.28,s*.07,s*.11,-.3,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(s*.08,s*.28,s*.07,s*.11,.3,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=sa(ba);
+    }
+
     // Aile
     ctx.rotate(this.wa);ctx.fillStyle=sk.wing;
     ctx.beginPath();ctx.ellipse(-s*.1,s*.15,s*.28,s*.16,-.3,0,Math.PI*2);ctx.fill();
@@ -949,7 +1088,156 @@ class Bird{
 
     // Joue
     ctx.globalAlpha=.42;ctx.fillStyle=sk.cheek;ctx.beginPath();ctx.ellipse(s*.15,s*.1,s*.12,s*.07,0,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;ctx.restore();
+    ctx.globalAlpha=1;
+
+    // ── DÉTAILS ZOMBIE ──
+    if(sk.fx==='zombie'){
+      // Cicatrice cousue
+      ctx.globalAlpha=.85;
+      ctx.strokeStyle='#1a4a0a';ctx.lineWidth=s*.04;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(-s*.08,-s*.18);ctx.lineTo(-s*.02,-s*.09);ctx.lineTo(-s*.06,s*.02);ctx.stroke();
+      ctx.strokeStyle='#ff3333';ctx.lineWidth=s*.02;
+      ctx.beginPath();ctx.moveTo(-s*.08,-s*.18);ctx.lineTo(-s*.02,-s*.09);ctx.lineTo(-s*.06,s*.02);ctx.stroke();
+      // Points de suture (petites lignes transversales)
+      for(let si=0;si<3;si++){
+        const sy=-s*.14+si*s*.08;const sx=-s*.05+si*s*.01;
+        ctx.strokeStyle='#e8e8c8';ctx.lineWidth=s*.025;
+        ctx.beginPath();ctx.moveTo(sx-s*.05,sy);ctx.lineTo(sx+s*.05,sy);ctx.stroke();
+      }
+      // Bandage
+      ctx.globalAlpha=.55;ctx.fillStyle='rgba(255,255,200,0.7)';
+      ctx.save();ctx.rotate(.25);ctx.fillRect(s*.02,-s*.3,s*.22,s*.06);
+      ctx.strokeStyle='rgba(180,170,140,0.5)';ctx.lineWidth=s*.01;ctx.strokeRect(s*.02,-s*.3,s*.22,s*.06);
+      ctx.restore();
+      // Œil zombie : pupille en croix rouge
+      ctx.globalAlpha=.9;
+      ctx.strokeStyle='#aa0000';ctx.lineWidth=s*.025;
+      ctx.beginPath();ctx.moveTo(s*.27,-s*.13);ctx.lineTo(s*.27,-s*.03);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(s*.22,-s*.08);ctx.lineTo(s*.32,-s*.08);ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+
+    // ── DÉTAILS PIRATE ──
+    if(sk.fx==='pirate'){
+      // Cache-œil (couvre l'œil gauche qui n'existe pas)
+      ctx.globalAlpha=.92;
+      ctx.fillStyle='#111';
+      ctx.beginPath();ctx.ellipse(s*.22,-s*.1,s*.17,s*.13,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#444';ctx.lineWidth=s*.025;ctx.stroke();
+      // Lanière du cache-œil
+      ctx.strokeStyle='#333';ctx.lineWidth=s*.03;
+      ctx.beginPath();ctx.moveTo(s*.05,-s*.1);ctx.lineTo(-s*.2,-s*.1);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(s*.39,-s*.1);ctx.lineTo(s*.58,-s*.08);ctx.stroke();
+      // Petit crâne sur le cache-œil
+      ctx.globalAlpha=.3;ctx.fillStyle='#fff';
+      ctx.beginPath();ctx.arc(s*.22,-s*.1,s*.07,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=.5;ctx.fillStyle='#000';
+      ctx.beginPath();ctx.arc(s*.18,-s*.12,s*.025,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(s*.26,-s*.12,s*.025,0,Math.PI*2);ctx.fill();
+
+      // Chapeau tricorne compact (au-dessus du corps)
+      // Bord
+      ctx.globalAlpha=.95;
+      ctx.fillStyle='#111';ctx.strokeStyle='#333';ctx.lineWidth=s*.03;
+      ctx.beginPath();ctx.ellipse(-s*.08,-s*.46,s*.52,s*.11,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+      // Calotte
+      ctx.beginPath();
+      ctx.moveTo(-s*.52,-s*.46);
+      ctx.quadraticCurveTo(-s*.48,-s*.68,-s*.08,-s*.72);
+      ctx.quadraticCurveTo(s*.32,-s*.68,s*.36,-s*.46);
+      ctx.closePath();ctx.fill();ctx.stroke();
+      // Bande rouge
+      ctx.strokeStyle='#cc0000';ctx.lineWidth=s*.04;
+      ctx.beginPath();ctx.moveTo(-s*.48,-s*.5);ctx.quadraticCurveTo(-s*.08,-s*.56,s*.32,-s*.5);ctx.stroke();
+      // Tête de mort sur le chapeau
+      ctx.globalAlpha=.8;ctx.fillStyle='#f0ead8';
+      ctx.beginPath();ctx.arc(-s*.08,-s*.6,s*.1,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#1a1a1a';
+      ctx.beginPath();ctx.arc(-s*.13,-s*.62,s*.025,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(-s*.03,-s*.62,s*.025,0,Math.PI*2);ctx.fill();
+      // Os croisés
+      ctx.strokeStyle='#f0ead8';ctx.lineWidth=s*.025;
+      ctx.beginPath();ctx.moveTo(-s*.15,-s*.52);ctx.lineTo(-s*.01,-s*.48);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-s*.01,-s*.52);ctx.lineTo(-s*.15,-s*.48);ctx.stroke();
+
+      // Dent en or (dans le bec)
+      ctx.globalAlpha=.9;ctx.fillStyle='#ffd700';
+      ctx.beginPath();ctx.roundRect(s*.5,-s*.01,s*.08,s*.07,s*.02);ctx.fill();
+      ctx.strokeStyle='#aa8800';ctx.lineWidth=s*.015;ctx.stroke();
+
+      // Perroquet sur l'épaule gauche
+      ctx.globalAlpha=.88;
+      // Corps perroquet
+      ctx.fillStyle='#22aa18';
+      ctx.beginPath();ctx.ellipse(-s*.42,s*.08,s*.12,s*.10,-.2,0,Math.PI*2);ctx.fill();
+      // Tête
+      ctx.fillStyle='#33cc28';
+      ctx.beginPath();ctx.ellipse(-s*.38,s*.01,s*.08,s*.08,0,0,Math.PI*2);ctx.fill();
+      // Œil perroquet
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-s*.35,-s*.01,s*.03,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#1a1a1a';ctx.beginPath();ctx.arc(-s*.34,-s*.01,s*.018,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-s*.33,-s*.02,s*.008,0,Math.PI*2);ctx.fill();
+      // Bec perroquet
+      ctx.fillStyle='#e8a000';
+      ctx.beginPath();ctx.moveTo(-s*.32,s*.01);ctx.lineTo(-s*.26,s*.04);ctx.lineTo(-s*.32,s*.06);ctx.closePath();ctx.fill();
+      // Aile perroquet
+      ctx.fillStyle='#1a8815';
+      ctx.beginPath();ctx.ellipse(-s*.46,s*.1,s*.06,s*.09,.35,0,Math.PI*2);ctx.fill();
+      // Queue rouge
+      ctx.strokeStyle='#cc2200';ctx.lineWidth=s*.03;
+      ctx.beginPath();ctx.moveTo(-s*.48,s*.14);ctx.quadraticCurveTo(-s*.54,s*.24,-s*.5,s*.3);ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+
+    // ── DÉTAILS TAUREAU ──
+    if(sk.fx==='taureau'){
+      // Cornes dorées
+      ctx.globalAlpha=.9;
+      ctx.strokeStyle='#c8a000';ctx.lineWidth=s*.07;ctx.lineCap='round';
+      // Corne gauche
+      ctx.beginPath();ctx.moveTo(-s*.2,-s*.32);ctx.quadraticCurveTo(-s*.42,-s*.52,-s*.32,-s*.65);ctx.stroke();
+      ctx.strokeStyle='#ffd700';ctx.lineWidth=s*.03;
+      ctx.beginPath();ctx.moveTo(-s*.2,-s*.32);ctx.quadraticCurveTo(-s*.42,-s*.52,-s*.32,-s*.65);ctx.stroke();
+      // Corne droite
+      ctx.strokeStyle='#c8a000';ctx.lineWidth=s*.07;
+      ctx.beginPath();ctx.moveTo(s*.2,-s*.32);ctx.quadraticCurveTo(s*.42,-s*.52,s*.32,-s*.65);ctx.stroke();
+      ctx.strokeStyle='#ffd700';ctx.lineWidth=s*.03;
+      ctx.beginPath();ctx.moveTo(s*.2,-s*.32);ctx.quadraticCurveTo(s*.42,-s*.52,s*.32,-s*.65);ctx.stroke();
+      // Pointes
+      ctx.fillStyle='#ffd700';
+      ctx.beginPath();ctx.arc(-s*.32,-s*.65,s*.05,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(s*.32,-s*.65,s*.05,0,Math.PI*2);ctx.fill();
+
+      // Sourcils en V extrême
+      ctx.strokeStyle='#3a0000';ctx.lineWidth=s*.06;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(-s*.1,-s*.2);ctx.lineTo(s*.12,-s*.08);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(s*.35,-s*.2);ctx.lineTo(s*.13,-s*.08);ctx.stroke();
+      // Reflet rouge
+      ctx.strokeStyle='rgba(255,100,50,0.4)';ctx.lineWidth=s*.025;
+      ctx.beginPath();ctx.moveTo(-s*.1,-s*.2);ctx.lineTo(s*.12,-s*.08);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(s*.35,-s*.2);ctx.lineTo(s*.13,-s*.08);ctx.stroke();
+
+      // Veines de colère
+      ctx.strokeStyle='#cc0000';ctx.lineWidth=s*.022;
+      ctx.beginPath();ctx.moveTo(-s*.05,-s*.38);ctx.lineTo(-s*.12,-s*.5);ctx.lineTo(-s*.06,-s*.46);ctx.lineTo(-s*.13,-s*.58);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(s*.18,-s*.35);ctx.lineTo(s*.25,-s*.47);ctx.lineTo(s*.19,-s*.43);ctx.lineTo(s*.26,-s*.55);ctx.stroke();
+
+      // Symbole de colère sur la joue (#)
+      ctx.strokeStyle='rgba(180,0,0,0.7)';ctx.lineWidth=s*.02;
+      ctx.beginPath();ctx.moveTo(-s*.22,s*.04);ctx.lineTo(-s*.1,s*.04);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-s*.22,s*.1);ctx.lineTo(-s*.1,s*.1);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-s*.17,s*.01);ctx.lineTo(-s*.19,s*.13);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-s*.13,s*.01);ctx.lineTo(-s*.15,s*.13);ctx.stroke();
+
+      // Vapeur des naseaux
+      ctx.globalAlpha=sa(.3*Math.abs(Math.sin(this.ph*2)));
+      ctx.fillStyle='rgba(255,80,30,0.6)';
+      ctx.beginPath();ctx.ellipse(s*.1,s*.28,s*.06,s*.1,-.3,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(s*.22,s*.28,s*.06,s*.1,.3,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=1;
+    }
+
+    ctx.restore();
   }
   getR(){return this.sz*.38;}
 }
@@ -1302,6 +1590,46 @@ function drawSkinPreview(c2,skin,sz){
   bg.addColorStop(0,skin.body[0]);bg.addColorStop(.6,skin.body[1]);bg.addColorStop(1,skin.body[2]);
   ct.fillStyle=bg;ct.beginPath();ct.ellipse(cx,cy,s*.52,s*.42,0,0,Math.PI*2);ct.fill();
   ct.strokeStyle=skin.stroke;ct.lineWidth=s*.05;ct.stroke();
+
+  // Détails spéciaux preview zombie
+  if(skin.fx==='zombie'){
+    // Bandage
+    ct.globalAlpha=.5;ct.fillStyle='rgba(255,255,200,0.7)';
+    ct.save();ct.translate(cx,cy);ct.rotate(.25);ct.fillRect(s*.02,-s*.3,s*.22,s*.06);ct.restore();
+    // Cicatrice
+    ct.globalAlpha=.7;ct.strokeStyle='#ff3333';ct.lineWidth=s*.025;ct.lineCap='round';
+    ct.save();ct.translate(cx,cy);
+    ct.beginPath();ct.moveTo(-s*.08,-s*.18);ct.lineTo(-s*.02,-s*.09);ct.lineTo(-s*.06,s*.02);ct.stroke();
+    ct.restore();ct.globalAlpha=1;
+  }
+  // Détails spéciaux preview pirate
+  if(skin.fx==='pirate'){
+    // Mini chapeau
+    ct.globalAlpha=.9;ct.fillStyle='#111';ct.strokeStyle='#333';ct.lineWidth=s*.03;
+    ct.save();ct.translate(cx,cy);
+    ct.beginPath();ct.ellipse(-s*.08,-s*.46,s*.5,s*.1,0,0,Math.PI*2);ct.fill();ct.stroke();
+    ct.beginPath();ct.moveTo(-s*.5,-s*.46);ct.quadraticCurveTo(-s*.46,-s*.66,-s*.08,-s*.7);ct.quadraticCurveTo(s*.3,-s*.66,s*.34,-s*.46);ct.closePath();ct.fill();ct.stroke();
+    ct.strokeStyle='#cc0000';ct.lineWidth=s*.035;
+    ct.beginPath();ct.moveTo(-s*.45,-s*.5);ct.quadraticCurveTo(-s*.08,-s*.54,s*.3,-s*.5);ct.stroke();
+    // Cache-œil
+    ct.fillStyle='#111';ct.strokeStyle='#444';ct.lineWidth=s*.02;
+    ct.beginPath();ct.ellipse(s*.22,-s*.1,s*.17,s*.13,0,0,Math.PI*2);ct.fill();ct.stroke();
+    ct.restore();ct.globalAlpha=1;
+  }
+  // Détails spéciaux preview taureau
+  if(skin.fx==='taureau'){
+    ct.save();ct.translate(cx,cy);
+    // Cornes
+    ct.globalAlpha=.85;ct.strokeStyle='#c8a000';ct.lineWidth=s*.065;ct.lineCap='round';
+    ct.beginPath();ct.moveTo(-s*.2,-s*.32);ct.quadraticCurveTo(-s*.42,-s*.52,-s*.32,-s*.62);ct.stroke();
+    ct.beginPath();ct.moveTo(s*.2,-s*.32);ct.quadraticCurveTo(s*.42,-s*.52,s*.32,-s*.62);ct.stroke();
+    // Sourcils en V
+    ct.strokeStyle='#3a0000';ct.lineWidth=s*.055;
+    ct.beginPath();ct.moveTo(-s*.1,-s*.2);ct.lineTo(s*.12,-s*.08);ct.stroke();
+    ct.beginPath();ct.moveTo(s*.35,-s*.2);ct.lineTo(s*.13,-s*.08);ct.stroke();
+    ct.restore();ct.globalAlpha=1;
+  }
+
   // Miniature trail dots for premium skins
   if(skin.trailMode!=='simple'&&skin.trailColors){
     for(let i=0;i<3;i++){
@@ -1344,11 +1672,29 @@ function renderShop(){
       if(eqd){btn.className='skin-btn eqd';btn.textContent='✓ ÉQUIPÉ';}
       else if(owned||sk.ninja){btn.className='skin-btn equip';btn.textContent='ÉQUIPER';}
       else if(SV.coins>=sk.price){btn.className='skin-btn buy';btn.textContent='ACHETER';}
-      else{btn.className='skin-btn poor';btn.textContent='🪙'+sk.price;}
+      else{btn.className='skin-btn poor';btn.textContent='🛒 ACHETER';}
       btn.addEventListener('click',()=>{
         if(eqd)return;
         if(owned||sk.ninja){SV.equipped=sk.id;if(!SV.owned.includes(sk.id))SV.owned.push(sk.id);saveSave();SFX.equip();renderShop();}
         else if(SV.coins>=sk.price){SV.coins-=sk.price;SV.owned.push(sk.id);SV.equipped=sk.id;saveSave();SFX.buy();vib(25);renderShop();}
+        else{
+          // Pas assez de pièces → rediriger vers la boutique PayPal
+          document.getElementById('shopOverlay').classList.remove('open');
+          document.getElementById('paypalOverlay').classList.add('open');
+          if(!window._ppInitialized){
+            window._ppInitialized=true;
+            const tryInit=()=>{
+              if(typeof paypal!=='undefined') initPayPalButtons();
+              else setTimeout(tryInit,500);
+            };
+            tryInit();
+          }
+          // Afficher un message contextuel
+          setTimeout(()=>{
+            const msg=document.getElementById('ppMsg');
+            if(msg){msg.textContent='💡 Achète des pièces pour débloquer ce skin !';msg.style.color='var(--cy)';}
+          },300);
+        }
       });
       card.append(pv,nm,pr,btn);
     }
