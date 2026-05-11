@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="theme-color" content="#06060f"/>
@@ -38,47 +38,15 @@ if('serviceWorker' in navigator){
 :root{
   --cy:#00f5ff;--pk:#ff006e;--gn:#39ff14;--yw:#ffe600;--pu:#cc00ff;
   --bg:#06060f;
-  /* Safe areas pour iPhone avec encoche / Dynamic Island / home indicator */
   --safe-top:env(safe-area-inset-top,12px);
-  --safe-bot:env(safe-area-inset-bottom,20px);
-  --safe-left:env(safe-area-inset-left,0px);
-  --safe-right:env(safe-area-inset-right,0px);
+  --safe-bot:env(safe-area-inset-bottom,10px);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-html{
-  height:100%;
-  /* Empêche le bounce scroll sur iOS */
-  -webkit-overflow-scrolling:touch;
-  overflow:hidden;
-}
-body{
-  width:100%;height:100%;
-  overflow:hidden;background:var(--bg);
-  font-family:'Press Start 2P',monospace;
-  touch-action:none;
-  user-select:none;-webkit-user-select:none;
-  /* Couvre toute la surface y compris sous l'encoche */
-  padding-top:0;
-  padding-bottom:0;
-}
-canvas{
-  display:block;
-  image-rendering:pixelated;
-  /* 100dvh = hauteur visible dynamique (tient compte de la barre Safari) */
-  max-height:100dvh;
-  max-width:100vw;
-  /* Touch events directs sur le canvas */
-  touch-action:none;
-}
-#gameWrapper{
-  position:fixed;
-  /* inset:0 = top/right/bottom/left:0 — couvre tout l'écran */
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:var(--bg);
-}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
+  font-family:'Press Start 2P',monospace;touch-action:none;
+  user-select:none;-webkit-user-select:none;}
+canvas{display:block;image-rendering:pixelated;max-height:100dvh;max-width:100vw;}
+#gameWrapper{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;}
 
 /* HUD */
 #hud{position:fixed;inset:0;pointer-events:none;}
@@ -98,10 +66,6 @@ canvas{
 .screen{
   position:fixed;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:12px;
-  padding-top:var(--safe-top);
-  padding-bottom:var(--safe-bot);
-  padding-left:var(--safe-left);
-  padding-right:var(--safe-right);
   transition:opacity .35s;
 }
 .screen.hidden{opacity:0;pointer-events:none;}
@@ -139,10 +103,7 @@ canvas{
   display:flex;flex-direction:column;align-items:center;
   padding:clamp(10px,3vw,20px);
   padding-top:calc(var(--safe-top) + 14px);
-  padding-bottom:calc(var(--safe-bot) + 14px);
-  /* scroll fluide iOS */
-  overflow-y:auto;-webkit-overflow-scrolling:touch;
-  opacity:0;pointer-events:none;
+  overflow-y:auto;opacity:0;pointer-events:none;
   transition:opacity .3s;z-index:60;
 }
 .overlay.open{opacity:1;pointer-events:all;}
@@ -202,7 +163,7 @@ canvas{
   position:fixed;top:0;left:0;right:0;
   background:linear-gradient(135deg,rgba(57,255,20,.15),rgba(0,245,255,.12));
   border-bottom:1px solid rgba(57,255,20,.3);
-  padding:calc(var(--safe-top) + 8px) calc(var(--safe-right) + 16px) 10px calc(var(--safe-left) + 16px);
+  padding:calc(var(--safe-top) + 8px) 16px 10px;
   text-align:center;z-index:80;
   transform:translateY(-100%);transition:transform .5s cubic-bezier(.17,.67,.35,1.1);
 }
@@ -219,10 +180,6 @@ canvas{
   position:fixed;inset:0;background:rgba(0,0,0,.92);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
   z-index:90;opacity:0;pointer-events:none;transition:opacity .4s;
-  padding-top:var(--safe-top);
-  padding-bottom:var(--safe-bot);
-  padding-left:var(--safe-left);
-  padding-right:var(--safe-right);
 }
 #ninjaUnlock.show{opacity:1;pointer-events:all;}
 #ninjaUnlock .ninja-title{font-size:clamp(16px,5vw,26px);color:#fff;text-align:center;line-height:1.8;animation:pulse 1s ease-in-out infinite;}
@@ -252,7 +209,6 @@ canvas{
 
 @keyframes blink{0%,100%{opacity:.85;}50%{opacity:0;}}
 @keyframes pulse{0%,100%{opacity:.9;}50%{opacity:1;}}
-@keyframes scCountPulse{0%{transform:scale(1.4);opacity:.6;}100%{transform:scale(1);opacity:1;}}
 
 /* LEADERBOARD */
 #lbOverlay{
@@ -260,9 +216,7 @@ canvas{
   display:flex;flex-direction:column;align-items:center;
   padding:clamp(10px,3vw,20px);
   padding-top:calc(var(--safe-top) + 14px);
-  padding-bottom:calc(var(--safe-bot) + 14px);
-  overflow-y:auto;-webkit-overflow-scrolling:touch;
-  opacity:0;pointer-events:none;
+  overflow-y:auto;opacity:0;pointer-events:none;
   transition:opacity .3s;z-index:60;
 }
 #lbOverlay.open{opacity:1;pointer-events:all;}
@@ -451,50 +405,11 @@ canvas{
   </div>
 </div>
 
-<!-- ACCOUNT POPUP (inscription / connexion) -->
-<div id="accountPopup" style="
-  position:fixed;inset:0;background:rgba(6,6,15,.98);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:14px;z-index:110;opacity:0;pointer-events:none;transition:opacity .4s;
-  padding:20px;
-  padding-top:calc(env(safe-area-inset-top,12px) + 20px);
-  padding-bottom:calc(env(safe-area-inset-bottom,20px) + 20px);
-  padding-left:calc(env(safe-area-inset-left,0px) + 20px);
-  padding-right:calc(env(safe-area-inset-right,0px) + 20px);
-">
-  <div style="font-size:clamp(24px,7vw,40px);">&#x1F3AE;</div>
-  <div id="accountTitle" style="font-size:clamp(11px,3vw,16px);color:var(--cy);text-align:center;line-height:1.8;"></div>
-  <div id="accountSub" style="font-size:clamp(7px,2vw,10px);color:rgba(255,255,255,.5);text-align:center;max-width:300px;line-height:2;"></div>
-  <div id="accountPseudoWrap" style="width:100%;max-width:300px;display:none;flex-direction:column;gap:8px;">
-    <input id="accountPseudoInput" maxlength="16" placeholder="TON PSEUDO (2-16 car.)..." autocomplete="off" spellcheck="false" style="font-family:'Press Start 2P',monospace;font-size:clamp(9px,2.5vw,12px);background:rgba(255,255,255,.06);border:1.5px solid rgba(0,245,255,.4);color:#fff;padding:11px 14px;border-radius:5px;width:100%;text-align:center;outline:none;letter-spacing:2px;"/>
-  </div>
-  <div id="accountPinWrap" style="width:100%;max-width:300px;display:none;flex-direction:column;gap:8px;align-items:center;">
-    <div style="font-size:clamp(6px,1.7vw,9px);color:rgba(255,255,255,.4);text-align:center;">PIN 4 CHIFFRES &#x2014; RETIENS-LE BIEN !</div>
-    <!-- Input caché unique pour compatibilité clavier Android -->
-    <input id="pinHidden" type="tel" inputmode="numeric" maxlength="4" autocomplete="one-time-code"
-      style="position:absolute;opacity:0;width:1px;height:1px;" />
-    <!-- Affichage visuel des 4 cases cliquables -->
-    <div id="pinDisplay" style="display:flex;gap:10px;justify-content:center;cursor:text;" onclick="(function(){var h=document.getElementById('pinHidden');h.removeAttribute('disabled');h.focus();try{h.click();}catch(e){}})();">
-      <div id="pin1" style="width:48px;height:56px;line-height:56px;text-align:center;font-size:22px;font-family:'Press Start 2P',monospace;background:rgba(255,255,255,.06);border:2px solid rgba(0,245,255,.4);color:#fff;border-radius:6px;"></div>
-      <div id="pin2" style="width:48px;height:56px;line-height:56px;text-align:center;font-size:22px;font-family:'Press Start 2P',monospace;background:rgba(255,255,255,.06);border:2px solid rgba(0,245,255,.4);color:#fff;border-radius:6px;"></div>
-      <div id="pin3" style="width:48px;height:56px;line-height:56px;text-align:center;font-size:22px;font-family:'Press Start 2P',monospace;background:rgba(255,255,255,.06);border:2px solid rgba(0,245,255,.4);color:#fff;border-radius:6px;"></div>
-      <div id="pin4" style="width:48px;height:56px;line-height:56px;text-align:center;font-size:22px;font-family:'Press Start 2P',monospace;background:rgba(255,255,255,.06);border:2px solid rgba(0,245,255,.4);color:#fff;border-radius:6px;"></div>
-    </div>
-  </div>
-  <div id="accountStatus" style="font-size:clamp(6px,1.7vw,9px);color:var(--pk);min-height:16px;text-align:center;letter-spacing:1px;"></div>
-  <div class="btn-row">
-    <button class="btn yw" id="accountBtnOk">&#x2713; VALIDER</button>
-    <button class="btn" id="accountBtnSkip" style="display:none;">PLUS TARD</button>
-  </div>
-</div>
-
 <!-- SECOND CHANCE POPUP -->
 <div id="scPopup" style="
   position:fixed;inset:0;background:rgba(0,0,0,.9);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:16px;z-index:100;opacity:0;pointer-events:none;transition:opacity .4s;
-  padding-top:env(safe-area-inset-top,12px);
-  padding-bottom:env(safe-area-inset-bottom,20px);
 ">
   <div style="font-size:clamp(30px,9vw,50px);">❤️</div>
   <div style="font-size:clamp(12px,3.5vw,18px);color:var(--pk);text-align:center;line-height:1.8;">CONTINUE ?</div>
@@ -606,7 +521,6 @@ async function lbSubmit(pseudo,score,skin){
     if(existing&&existing.score>=score){
       status.textContent=`TON RECORD EST DÉJÀ ${existing.score} !`;
       status.className='lb-status info';
-      clearPendingScore();
       lbLoad();return;
     }
     const{error}=await sb.from('leaderboard').upsert(
@@ -615,16 +529,13 @@ async function lbSubmit(pseudo,score,skin){
     );
     if(error)throw error;
     localStorage.setItem('fwPseudo',pseudo);
-    clearPendingScore();
     status.textContent='✓ SCORE SOUMIS !';status.className='lb-status';
     document.getElementById('submitForm').style.display='none';
     _pendingScore=null;
     SFX.buy();vib(30);
     setTimeout(lbLoad,500);
   }catch(e){
-    // Bug 8 fix : sauvegarder en attente si offline
-    savePendingScore(pseudo,score,skin);
-    status.textContent='PAS DE RÉSEAU — SCORE SAUVEGARDÉ EN ATTENTE';
+    status.textContent='ERREUR: '+(e.message||'INCONNU');
     status.className='lb-status err';
   }
 }
@@ -685,15 +596,13 @@ const DEF_SAVE={
   upgrades:{jump:0,gravity:0,speed:0},
   dailyLast:'',streak:0,
   secondChances:1,// offerte au démarrage
+  freeSCUsed:false,// seconde chance gratuite utilisée
 };
 function loadSave(){
   try{const s=JSON.parse(localStorage.getItem('fwv4'));return s?{...DEF_SAVE,...s,upgrades:{...DEF_SAVE.upgrades,...(s.upgrades||{})}}:structuredClone(DEF_SAVE);}
   catch(e){return structuredClone(DEF_SAVE);}
 }
-function saveSave(){
-  try{localStorage.setItem('fwv4',JSON.stringify(SV));}catch(e){}
-  if(typeof saveToCloud==='function')saveToCloud();
-}
+function saveSave(){try{localStorage.setItem('fwv4',JSON.stringify(SV));}catch(e){}}
 let SV=loadSave();
 
 /* ── DAILY ── */
@@ -1408,7 +1317,6 @@ class Game{
     this.wi=0;this.wt=1;this.wTransing=false;this.wLabelA=0;this.wLabelT=0;
     this._bgG=null;this._bgGK='';
     this.state='playing';
-    this.scUsedThisGame=false; // Bug 3+9 fix : réinitialisé à chaque partie
     SV.games++;saveSave();
     showScreen(null);
     document.getElementById('hud').classList.add('playing');
@@ -1418,48 +1326,24 @@ class Game{
 
 
   revive(){
-    // Repositionner l'oiseau au centre de l'écran
-    this.bird.x=this.W*.25;
-    this.bird.y=this.H*.45;
+    // Ressusciter l'oiseau à sa position actuelle
     this.bird.alive=true;
     this.bird.stunned=false;
-    this.bird.vy=0;
+    this.bird.vy=-this.baseGrav*8; // petit boost vers le haut
     this.bird.dt=0;
     this.bird.angle=0;
-    // Effacer tous les tuyaux pour laisser de l'espace
-    this.pipes=[];
-    this.nextPX=this.W+this.pw;
+    this.state='playing';
+    document.getElementById('hud').classList.add('playing');
+    SFX.buy(); vib(30);
+    // Effacer les tuyaux proches pour laisser de l'espace
+    this.pipes=this.pipes.filter(p=>p.x>this.W*.3);
     this.parts=[];
     this.flash=0;
-    SFX.buy(); vib(30);
-    // Compte à rebours 3 secondes avant de reprendre
-    this.state='reviving';
-    document.getElementById('hud').classList.remove('playing');
-    this._reviveCountdown=3;
-    this._reviveTimer=0;
-    this._showReviveOverlay(3);
-  }
-
-  _showReviveOverlay(n){
-    let el=document.getElementById('reviveCountdown');
-    if(!el){
-      el=document.createElement('div');
-      el.id='reviveCountdown';
-      el.style.cssText='position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:95;pointer-events:none;';
-      document.body.appendChild(el);
-    }
-    el.innerHTML=`<div style="font-family:\'Press Start 2P\',monospace;font-size:clamp(60px,18vw,100px);color:#fff;text-shadow:0 0 30px rgba(0,245,255,.8),0 0 60px rgba(0,245,255,.4);animation:scCountPulse .8s ease-out;">${n}</div>`;
-  }
-
-  _hideReviveOverlay(){
-    const el=document.getElementById('reviveCountdown');
-    if(el)el.remove();
   }
 
   tap(){
     if(anyOverlayOpen())return;
     if(this.state==='menu'||this.state==='dead'){this.startGame();return;}
-    if(this.state==='reviving')return; // bloquer le tap pendant le compte à rebours
     if(this.state==='playing'&&this.bird.alive)this.bird.flap(this.grav(),this.flapMult);
   }
 
@@ -1493,21 +1377,6 @@ class Game{
   update(ts){
     const dt=Math.min(ts-this.lastTs,50);this.lastTs=ts;
     this.stars.update();
-    if(this.state==='reviving'){
-      this._reviveTimer+=dt;
-      if(this._reviveTimer>=1000){
-        this._reviveTimer=0;
-        this._reviveCountdown--;
-        if(this._reviveCountdown<=0){
-          this._hideReviveOverlay();
-          this.state='playing';
-          document.getElementById('hud').classList.add('playing');
-        } else {
-          this._showReviveOverlay(this._reviveCountdown);
-        }
-      }
-      return;
-    }
     if(this.state!=='playing')return;
     this.fc++;
     this._applyDiff();
@@ -1541,7 +1410,7 @@ class Game{
           document.getElementById('hudBest').textContent=SV.best>0?'↑'+SV.best:'';
           showCoinFloat(this.bird.x,this.bird.y-this.bsz,earned);SFX.coin();
 
-          if(this.score>=93&&!SV.ninjaUnlocked){SV.ninjaUnlocked=true;saveSave();this._ninjaUnlockPending=true;}
+          if(this.score>=93&&!SV.ninjaUnlocked){SV.ninjaUnlocked=true;saveSave();this._unlockNinja();}
           if(this.score%20===0){
             this.wi=Math.min(this.wi+1,WORLDS.length-1);
             this.wt=0;this.wTransing=true;this.wLabelT=120;
@@ -1591,10 +1460,9 @@ class Game{
   }
 
   _unlockNinja(){
-    // Appelé uniquement après le game over (via _showDeadScreenFinal)
     if(SV.ninjaNotified)return;
     SV.ninjaNotified=true;saveSave();SFX.ninja();
-    setTimeout(()=>document.getElementById('ninjaUnlock').classList.add('show'),600);
+    setTimeout(()=>document.getElementById('ninjaUnlock').classList.add('show'),1500);
   }
 
   drawBg(){
@@ -1652,14 +1520,13 @@ function showScreen(id){
 }
 function showDeadScreen(score,coins){
   _pendingScore=score;
-  // Vérifier si on propose une seconde chance (1 seule par partie)
-  const hasSC=(SV.secondChances||0)>0 && !game.scUsedThisGame;
+  // Vérifier si on propose une seconde chance
+  const hasSC=(SV.secondChances||0)>0;
   if(hasSC){
     // Proposer la seconde chance avant le game over
     offerSecondChance(
       // onContinue : le joueur accepte
       function(){
-        game.scUsedThisGame=true; // Bug 3 fix : marquer SC utilisée cette partie
         // Relancer la partie depuis la position actuelle
         game.revive();
       },
@@ -1684,8 +1551,6 @@ function _showDeadScreenFinal(score,coins){
   const scInfoEl=document.getElementById('deadSCInfo');
   if(scInfoEl)scInfoEl.textContent=sc>0?'❤️ '+sc+' seconde(s) chance(s) dispo':'';
   showScreen('deadScreen');
-  // Afficher le popup ninja uniquement ici, après le game over
-  if(game._ninjaUnlockPending){game._ninjaUnlockPending=false;game._unlockNinja();}
 }
 function showMenu(){
   document.getElementById('menuCoins').textContent='🪙 '+SV.coins+' PIÈCES';
@@ -1991,478 +1856,10 @@ function showPpMsg(msg, isErr=false){
   setTimeout(() => { if(el.textContent===msg) el.textContent=''; }, 4000);
 }
 
-/* ── Bug 8 fix : score en attente offline ── */
-function savePendingScore(pseudo,score,skin){
-  try{localStorage.setItem('fwPendingScore',JSON.stringify({pseudo,score,skin}));}catch(e){}
-}
-function clearPendingScore(){
-  try{localStorage.removeItem('fwPendingScore');}catch(e){}
-}
-async function flushPendingScore(){
-  try{
-    const raw=localStorage.getItem('fwPendingScore');
-    if(!raw)return;
-    const {pseudo,score,skin}=JSON.parse(raw);
-    const{data:existing}=await sb.from('leaderboard').select('score').eq('pseudo',pseudo).maybeSingle();
-    if(!existing||existing.score<score){
-      await sb.from('leaderboard').upsert({pseudo,score,skin},{onConflict:'pseudo'});
-    }
-    clearPendingScore();
-    console.log('Score en attente soumis !');
-  }catch(e){/* toujours offline, on réessaiera */}
-}
-// Essayer de soumettre le score en attente au démarrage
-window.addEventListener('online',flushPendingScore);
-setTimeout(flushPendingScore,2000);
-
-/* ════════════════════════════════════════
-   SYSTÈME DE COMPTE (device_id + pseudo + PIN)
-   Table purchases : device_id, pseudo, pin_hash, sc, coins, best,
-                     owned, upgrades, equipped, streak, updated_at
-════════════════════════════════════════ */
-
-// ── Hash PIN (SHA-256 simple via Web Crypto) ──
-async function hashPin(pin){
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pin));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-// ── Récupère ou génère le device_id ──
-function getDeviceId(){
-  let id=localStorage.getItem('fwDeviceId');
-  if(!id){id=crypto.randomUUID();localStorage.setItem('fwDeviceId',id);}
-  return id;
-}
-
-// ── Restaure les données depuis la ligne cloud ──
-function _applyCloudData(data){
-  let changed=false;
-  if((data.sc||0)>(SV.secondChances||0)){SV.secondChances=data.sc;changed=true;}
-  if((data.coins||0)>(SV.coins||0)){SV.coins=data.coins;changed=true;}
-  if((data.best||0)>(SV.best||0)){SV.best=data.best;changed=true;}
-  if((data.streak||0)>(SV.streak||0)){SV.streak=data.streak;changed=true;}
-  if(data.owned){try{
-    const co=JSON.parse(data.owned);
-    const merged=[...new Set([...(SV.owned||['classic']),...co])];
-    if(merged.length>(SV.owned||[]).length){SV.owned=merged;changed=true;}
-  }catch(e){}}
-  if(data.upgrades){try{
-    const cu=JSON.parse(data.upgrades);
-    ['jump','gravity','speed'].forEach(k=>{
-      if((cu[k]||0)>(SV.upgrades[k]||0)){SV.upgrades[k]=cu[k];changed=true;}
-    });
-  }catch(e){}}
-  if(data.equipped&&SV.owned.includes(data.equipped)&&data.equipped!==SV.equipped){
-    SV.equipped=data.equipped;changed=true;
-  }
-  if(changed){saveSave();console.log('☁️ Données cloud restaurées');}
-}
-
-// ── Sync au démarrage : cherche par device_id uniquement ──
-async function syncFromCloud(){
-  try{
-    const did=getDeviceId();
-    const{data}=await sb.from('purchases')
-      .select('sc,coins,best,owned,upgrades,equipped,streak')
-      .eq('device_id',did).maybeSingle();
-    if(data)_applyCloudData(data);
-  }catch(e){console.warn('syncFromCloud:',e);}
-}
-
-// ── Sauvegarde cloud (debounced 3s) ──
-let _cloudSaveTimer=null;
-async function saveToCloud(){
-  clearTimeout(_cloudSaveTimer);
-  _cloudSaveTimer=setTimeout(async()=>{
-    const did=getDeviceId();
-    if(!localStorage.getItem('fwPseudo'))return; // pas encore de compte
-    try{
-      const pseudo=(localStorage.getItem('fwPseudo')||'').toUpperCase();
-      await sb.from('purchases').upsert({
-        device_id : did,
-        pseudo    : pseudo,
-        sc        : SV.secondChances||0,
-        coins     : SV.coins||0,
-        best      : SV.best||0,
-        owned     : JSON.stringify(SV.owned||['classic']),
-        upgrades  : JSON.stringify(SV.upgrades||{jump:0,gravity:0,speed:0}),
-        equipped  : SV.equipped||'classic',
-        streak    : SV.streak||0,
-        updated_at: new Date().toISOString()
-      },{onConflict:'device_id'});
-    }catch(e){}
-  },3000);
-}
-const savePurchaseToCloud=saveToCloud;
-
-/* ════════════════════════════════════════
-   POPUP COMPTE : inscription / connexion
-════════════════════════════════════════ */
-// Flux :
-// 1. Pas de device_id → première ouverture → showAccountPopup('new')
-// 2. device_id + ligne DB → syncFromCloud normal
-// 3. device_id SANS ligne DB + pseudo leaderboard connu → showAccountPopup('migrate_pin')
-// 4. device_id SANS ligne DB + pas de pseudo → showAccountPopup('migrate_new')
-// 5. (recover) device_id inconnu, pas de pseudo local → showAccountPopup('recover')
-
-let _accountStep = ''; // 'new' | 'new_pin' | 'recover' | 'login_pin' | 'migrate_pin' | 'migrate_new'
-let _accountPendingPseudo = '';
-
-function _getPin(){
-  return (document.getElementById('pinHidden').value||'').replace(/[^0-9]/g,'').slice(0,4);
-}
-function _clearPin(){
-  const h=document.getElementById('pinHidden');
-  h.value='';
-  ['pin1','pin2','pin3','pin4'].forEach(id=>{
-    const d=document.getElementById(id);
-    d.textContent='';
-    d.style.borderColor='rgba(0,245,255,.4)';
-  });
-}
-function _showAccountEl(elId,flex=true){
-  const el=document.getElementById(elId);
-  el.style.display=flex?'flex':'none';
-}
-function setAccountStatus(msg,isErr=true){
-  const el=document.getElementById('accountStatus');
-  el.textContent=msg;
-  el.style.color=isErr?'var(--pk)':'var(--gn)';
-}
-
-function showAccountPopup(mode){
-  _accountStep=mode;
-  const popup=document.getElementById('accountPopup');
-  const title=document.getElementById('accountTitle');
-  const sub=document.getElementById('accountSub');
-  const skipBtn=document.getElementById('accountBtnSkip');
-  setAccountStatus('');
-  _clearPin();
-
-  if(mode==='new'){
-    title.textContent='BIENVENUE !';
-    sub.textContent='Choisis un pseudo pour sauvegarder ta progression et apparaître au classement.';
-    _showAccountEl('accountPseudoWrap');
-    _showAccountEl('accountPinWrap',false);
-    skipBtn.style.display='block'; // peut jouer sans compte
-  } else if(mode==='new_pin'){
-    title.textContent='CRÉE TON PIN';
-    sub.textContent='Retiens bien ce code à 4 chiffres. Il te permettra de récupérer ton compte.';
-    _showAccountEl('accountPseudoWrap',false);
-    _showAccountEl('accountPinWrap');
-    skipBtn.style.display='none';
-  } else if(mode==='recover'){
-    title.textContent='COMPTE INTROUVABLE';
-    sub.textContent="Ton appareil n'est pas reconnu. Entre ton pseudo + PIN pour récupérer tes données, ou crée un nouveau compte.";
-    _showAccountEl('accountPseudoWrap');
-    _showAccountEl('accountPinWrap');
-    skipBtn.style.display='block';
-  } else if(mode==='login_pin'){
-    title.textContent='PSEUDO DÉJÀ PRIS';
-    sub.textContent="Ce pseudo existe déjà. Entre ton PIN pour confirmer que c'est bien toi.";
-    _showAccountEl('accountPseudoWrap',false);
-    _showAccountEl('accountPinWrap');
-    skipBtn.style.display='block';
-  } else if(mode==='migrate_pin'){
-    // Ancien joueur avec pseudo leaderboard → juste créer un PIN
-    title.textContent='SÉCURISE TON COMPTE';
-    sub.textContent='Bienvenue ' + _accountPendingPseudo + ' ! Crée un code PIN à 4 chiffres pour protéger ton compte.';
-    _showAccountEl('accountPseudoWrap',false);
-    _showAccountEl('accountPinWrap');
-    skipBtn.style.display='block';
-  } else if(mode==='migrate_new'){
-    // Ancien joueur SANS pseudo leaderboard → créer pseudo + PIN
-    title.textContent='CRÉE TON COMPTE';
-    sub.textContent='Nouvelle version ! Crée un pseudo et un PIN pour sauvegarder ta progression.';
-    _showAccountEl('accountPseudoWrap');
-    _showAccountEl('accountPinWrap',false);
-    skipBtn.style.display='block';
-  }
-
-  popup.style.opacity='1';
-  popup.style.pointerEvents='all';
-
-  // Auto-focus : sur pinHidden pour déclencher le clavier (y compris Android/iOS)
-  if(mode==='new_pin'||mode==='recover'||mode==='login_pin'||mode==='migrate_pin'){
-    // Petit délai pour laisser le DOM s'afficher avant le focus
-    setTimeout(()=>{ 
-      const h=document.getElementById('pinHidden');
-      h.removeAttribute('disabled');
-      h.style.pointerEvents='auto';
-      h.focus();
-      try{ h.click(); } catch(e){}
-    }, 200);
-  } else {
-    setTimeout(()=>{
-      const inp=document.getElementById('accountPseudoInput');
-      inp.removeAttribute('readonly');
-      inp.focus();
-    }, 200);
-  }
-}
-
-function closeAccountPopup(){
-  const popup=document.getElementById('accountPopup');
-  popup.style.opacity='0';
-  popup.style.pointerEvents='none';
-}
-
-// PIN : input caché unique → mise à jour affichage visuel (compatible Android)
-(function(){
-  const hidden = document.getElementById('pinHidden');
-  const dots = ['pin1','pin2','pin3','pin4'].map(id=>document.getElementById(id));
-
-  function updateDisplay(){
-    const val = hidden.value.replace(/[^0-9]/g,'').slice(0,4);
-    hidden.value = val;
-    dots.forEach((d,i)=>{
-      d.textContent = val[i] ? '●' : '';
-      d.style.borderColor = i===val.length && val.length<4
-        ? 'rgba(0,245,255,1)' : 'rgba(0,245,255,.4)';
-    });
-  }
-
-  hidden.addEventListener('input', updateDisplay);
-  // Clic sur les cases → focus input caché (ouvre le clavier sur Android)
-  document.getElementById('pinDisplay').addEventListener('click', ()=>{ hidden.focus(); });
-})();
-
-// Bouton PLUS TARD
-document.getElementById('accountBtnSkip').addEventListener('click',e=>{
-  e.stopPropagation();
-  closeAccountPopup();
-  // Joue sans compte, syncFromCloud normal
-  syncFromCloud();
-});
-
-// Bouton VALIDER
-document.getElementById('accountBtnOk').addEventListener('click',async e=>{
-  e.stopPropagation();
-  const did=getDeviceId();
-  const statusEl=document.getElementById('accountStatus');
-
-  // Guard : si bootAccount n'a pas encore fini, on attend
-  if(!_accountStep){
-    setAccountStatus('CHARGEMENT...', false);
-    return;
-  }
-
-  if(_accountStep==='new'){
-    // Valider le pseudo
-    const raw=document.getElementById('accountPseudoInput').value.trim();
-    const pseudo=raw.toUpperCase().replace(/[^A-Z0-9_\-]/g,'').slice(0,16);
-    if(pseudo.length<2){setAccountStatus('MIN 2 CARACTÈRES');return;}
-    setAccountStatus('VÉRIFICATION...', false);
-
-    try{
-      const{data:existing}=await sb.from('purchases').select('device_id,pin_hash').eq('pseudo',pseudo).maybeSingle();
-      if(!existing){
-        // Pseudo libre → passer à création PIN
-        _accountPendingPseudo=pseudo;
-        showAccountPopup('new_pin');
-      } else {
-        // Pseudo pris → demander PIN pour login
-        _accountPendingPseudo=pseudo;
-        showAccountPopup('login_pin');
-      }
-    }catch(e){setAccountStatus('ERREUR RÉSEAU');}
-
-  } else if(_accountStep==='new_pin'){
-    // Créer compte avec pseudo + PIN
-    const pin=_getPin();
-    if(pin.length<4){setAccountStatus('4 CHIFFRES REQUIS');return;}
-    setAccountStatus('CRÉATION...', false);
-    try{
-      const ph=await hashPin(pin);
-      // Vérifier si une ligne existe déjà pour ce device (ancien utilisateur sans pseudo)
-      const{data:myRow}=await sb.from('purchases').select('device_id').eq('device_id',did).maybeSingle();
-      if(myRow){
-        // Mettre à jour la ligne existante
-        await sb.from('purchases').update({
-          pseudo:_accountPendingPseudo, pin_hash:ph, updated_at:new Date().toISOString()
-        }).eq('device_id',did);
-      } else {
-        // Insérer nouvelle ligne
-        await sb.from('purchases').insert({
-          device_id:did, pseudo:_accountPendingPseudo, pin_hash:ph,
-          sc:SV.secondChances||0, coins:SV.coins||0, best:SV.best||0,
-          owned:JSON.stringify(SV.owned||['classic']),
-          upgrades:JSON.stringify(SV.upgrades||{jump:0,gravity:0,speed:0}),
-          equipped:SV.equipped||'classic', streak:SV.streak||0,
-          updated_at:new Date().toISOString()
-        });
-      }
-      localStorage.setItem('fwPseudo',_accountPendingPseudo);
-      setAccountStatus('✓ COMPTE CRÉÉ !', false);
-      SFX.buy(); vib(30);
-      setTimeout(closeAccountPopup, 1200);
-    }catch(e){setAccountStatus('ERREUR : '+( e.message||'INCONNU'));}
-
-  } else if(_accountStep==='login_pin'){
-    // Connexion : vérifier PIN
-    const pin=_getPin();
-    if(pin.length<4){setAccountStatus('4 CHIFFRES REQUIS');return;}
-    setAccountStatus('VÉRIFICATION...', false);
-    try{
-      const ph=await hashPin(pin);
-      const{data}=await sb.from('purchases')
-        .select('pin_hash,sc,coins,best,owned,upgrades,equipped,streak')
-        .eq('pseudo',_accountPendingPseudo).maybeSingle();
-      if(!data){setAccountStatus('COMPTE INTROUVABLE');return;}
-      if(data.pin_hash!==ph){setAccountStatus('PIN INCORRECT');_clearPin();return;}
-      // PIN OK → mettre à jour device_id + restaurer données
-      await sb.from('purchases').update({device_id:did,updated_at:new Date().toISOString()}).eq('pseudo',_accountPendingPseudo);
-      localStorage.setItem('fwPseudo',_accountPendingPseudo);
-      _applyCloudData(data);
-      setAccountStatus('✓ COMPTE RÉCUPÉRÉ !', false);
-      SFX.buy(); vib(30);
-      setTimeout(()=>{closeAccountPopup();showMenu();}, 1200);
-    }catch(e){setAccountStatus('ERREUR RÉSEAU');}
-
-  } else if(_accountStep==='recover'){
-    // Récupération : pseudo + PIN ensemble
-    const raw=document.getElementById('accountPseudoInput').value.trim();
-    const pseudo=raw.toUpperCase().replace(/[^A-Z0-9_\-]/g,'').slice(0,16);
-    const pin=_getPin();
-    if(pseudo.length<2){setAccountStatus('MIN 2 CARACTÈRES PSEUDO');return;}
-    if(pin.length<4){setAccountStatus('4 CHIFFRES PIN REQUIS');return;}
-    setAccountStatus('VÉRIFICATION...', false);
-    try{
-      const ph=await hashPin(pin);
-      const{data}=await sb.from('purchases')
-        .select('pin_hash,sc,coins,best,owned,upgrades,equipped,streak')
-        .eq('pseudo',pseudo).maybeSingle();
-      if(!data){setAccountStatus('PSEUDO INTROUVABLE');return;}
-      if(data.pin_hash!==ph){setAccountStatus('PIN INCORRECT');_clearPin();return;}
-      await sb.from('purchases').update({device_id:did,updated_at:new Date().toISOString()}).eq('pseudo',pseudo);
-      localStorage.setItem('fwPseudo',pseudo);
-      _applyCloudData(data);
-      setAccountStatus('✓ DONNÉES RÉCUPÉRÉES !', false);
-      SFX.buy(); vib(30);
-      setTimeout(()=>{closeAccountPopup();showMenu();}, 1200);
-    }catch(e){setAccountStatus('ERREUR RÉSEAU');}
-
-  } else if(_accountStep==='migrate_pin'){
-    // Migration : ancien joueur avec pseudo leaderboard → créer son PIN
-    const pin=_getPin();
-    if(pin.length<4){setAccountStatus('4 CHIFFRES REQUIS');return;}
-    setAccountStatus('CRÉATION...', false);
-    try{
-      const ph=await hashPin(pin);
-      // Cas 1 : ligne purchases existe pour ce device_id mais sans pseudo (ancien utilisateur)
-      const{data:myRow}=await sb.from('purchases').select('device_id').eq('device_id',did).maybeSingle();
-      if(myRow){
-        // Mettre à jour la ligne existante avec pseudo + PIN
-        await sb.from('purchases').update({
-          pseudo:_accountPendingPseudo, pin_hash:ph, updated_at:new Date().toISOString()
-        }).eq('device_id',did);
-      } else {
-        // Cas 2 : pas de ligne pour ce device → vérifier si pseudo pris ailleurs
-        const{data:pseudoRow}=await sb.from('purchases').select('device_id').eq('pseudo',_accountPendingPseudo).maybeSingle();
-        if(pseudoRow){
-          // Pseudo pris sur un autre device → update device_id + pin
-          await sb.from('purchases').update({device_id:did,pin_hash:ph,updated_at:new Date().toISOString()}).eq('pseudo',_accountPendingPseudo);
-        } else {
-          // Aucune ligne → insérer
-          await sb.from('purchases').insert({
-            device_id:did, pseudo:_accountPendingPseudo, pin_hash:ph,
-            sc:SV.secondChances||0, coins:SV.coins||0, best:SV.best||0,
-            owned:JSON.stringify(SV.owned||['classic']),
-            upgrades:JSON.stringify(SV.upgrades||{jump:0,gravity:0,speed:0}),
-            equipped:SV.equipped||'classic', streak:SV.streak||0,
-            updated_at:new Date().toISOString()
-          });
-        }
-      }
-      localStorage.setItem('fwPseudo',_accountPendingPseudo);
-      setAccountStatus('✓ COMPTE SÉCURISÉ !', false);
-      SFX.buy(); vib(30);
-      setTimeout(closeAccountPopup, 1200);
-    }catch(e){setAccountStatus('ERREUR : '+(e.message||'INCONNU'));}
-
-  } else if(_accountStep==='migrate_new'){
-    // Migration : ancien joueur SANS pseudo → créer pseudo puis PIN
-    const raw=document.getElementById('accountPseudoInput').value.trim();
-    const pseudo=raw.toUpperCase().replace(/[^A-Z0-9_\-]/g,'').slice(0,16);
-    if(pseudo.length<2){setAccountStatus('MIN 2 CARACTÈRES');return;}
-    setAccountStatus('VÉRIFICATION...', false);
-    try{
-      const{data:existing}=await sb.from('purchases').select('device_id').eq('pseudo',pseudo).maybeSingle();
-      if(existing){
-        // Pseudo pris → login_pin
-        _accountPendingPseudo=pseudo;
-        showAccountPopup('login_pin');
-      } else {
-        // Pseudo libre → créer PIN
-        _accountPendingPseudo=pseudo;
-        showAccountPopup('new_pin');
-      }
-    }catch(e){setAccountStatus('ERREUR RÉSEAU');}
-  }
-});
-
-// ── Boot : décide si on affiche le popup compte ──
-async function bootAccount(){
-  const did=localStorage.getItem('fwDeviceId');
-  if(!did){
-    getDeviceId();
-    showAccountPopup('new');
-    return;
-  }
-  try{
-    const{data}=await sb.from('purchases')
-      .select('device_id,pseudo,pin_hash')
-      .eq('device_id',did).maybeSingle();
-
-    if(data){
-      if(data.pseudo && data.pin_hash){
-        // Compte complet → sync normal, pas de popup
-        syncFromCloud();
-        return;
-      }
-      // Ligne sans pseudo/PIN (ancien utilisateur)
-      // Priorité : pseudo dans la ligne DB > localStorage > migrate_new
-      const dbPseudo=(data.pseudo||'').trim();
-      const localPseudo=(localStorage.getItem('fwPseudo')||'').trim();
-      const bestPseudo=(dbPseudo||localPseudo).toUpperCase();
-      if(bestPseudo){
-        _accountPendingPseudo=bestPseudo;
-        showAccountPopup('migrate_pin');
-      } else {
-        showAccountPopup('migrate_new');
-      }
-      return;
-    }
-
-    // Aucune ligne purchases pour ce device_id
-    const localPseudo=(localStorage.getItem('fwPseudo')||'').trim();
-    if(localPseudo){
-      const{data:lbData}=await sb.from('leaderboard').select('pseudo').eq('pseudo',localPseudo.toUpperCase()).maybeSingle();
-      if(lbData){
-        _accountPendingPseudo=localPseudo.toUpperCase();
-        showAccountPopup('migrate_pin');
-        return;
-      }
-      // Pseudo local mais pas dans leaderboard → propose quand même migrate_pin avec ce pseudo
-      _accountPendingPseudo=localPseudo.toUpperCase();
-      showAccountPopup('migrate_pin');
-      return;
-    }
-    // Vraiment nouveau
-    showAccountPopup('new');
-  }catch(e){
-    console.warn('bootAccount offline:', e);
-    // Offline : si on a un device_id connu, on laisse jouer sans popup
-  }
-}
-
-// Lancer au démarrage
-window.addEventListener('online',()=>{syncFromCloud();saveToCloud();});
-setTimeout(bootAccount, 500);
-
 function createPayPalButton(containerId, amount, label, onSuccess){
   const container = document.getElementById(containerId);
   if(!container) return;
+  // Vérifier si PayPal SDK est chargé
   if(typeof paypal === 'undefined'){
     container.innerHTML = '<div style="font-size:7px;color:#888;padding:8px;">PayPal indisponible</div>';
     return;
@@ -2479,11 +1876,6 @@ function createPayPalButton(containerId, amount, label, onSuccess){
     },
     onApprove: function(data, actions){
       return actions.order.capture().then(function(details){
-        // Bug 7 fix : vérifier que le statut est bien COMPLETED
-        if(details.status !== 'COMPLETED'){
-          showPpMsg('❌ Paiement non complété', true);
-          return;
-        }
         onSuccess(details);
       });
     },
@@ -2499,7 +1891,6 @@ function initPayPalButtons(){
   createPayPalButton('paypal-btn-1000', '5.00', '1000 pièces Floppy Wings', function(details){
     SV.coins += 1000;
     saveSave();
-    savePurchaseToCloud();
     document.getElementById('menuCoins').textContent='🪙 '+SV.coins+' PIÈCES';
     document.getElementById('shopCoinsVal').textContent=SV.coins;
     showPpMsg('✓ +1000 pièces ajoutées !');
@@ -2510,7 +1901,6 @@ function initPayPalButtons(){
   createPayPalButton('paypal-btn-2000', '8.00', '2000 pièces Floppy Wings', function(details){
     SV.coins += 2000;
     saveSave();
-    savePurchaseToCloud();
     document.getElementById('menuCoins').textContent='🪙 '+SV.coins+' PIÈCES';
     document.getElementById('shopCoinsVal').textContent=SV.coins;
     showPpMsg('✓ +2000 pièces ajoutées !');
@@ -2521,7 +1911,6 @@ function initPayPalButtons(){
   createPayPalButton('paypal-btn-sc', '5.00', '10 secondes chances Floppy Wings', function(details){
     SV.secondChances = (SV.secondChances||0) + 10;
     saveSave();
-    savePurchaseToCloud();
     showPpMsg('✓ +10 secondes chances !');
     SFX.buy(); vib(40);
   });
@@ -2560,6 +1949,7 @@ function closeScPopup(){
 document.getElementById('btnUseSC').addEventListener('click', e=>{
   e.stopPropagation();
   SV.secondChances = Math.max(0,(SV.secondChances||0)-1);
+  SV.freeSCUsed = true;
   saveSave();
   closeScPopup();
   if(_scCallback) _scCallback.onContinue();
