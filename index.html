@@ -754,7 +754,7 @@ class Particle{
 
 class Ground{
   constructor(H,gh){this.H=H;this.gh=gh;this.off=0;this._g=null;}
-  update(sp,mv){if(mv)this.off=(this.off+sp)%40;}
+  update(sp,mv,dtf=1){if(mv)this.off=(this.off+sp*dtf)%40;}
   draw(ctx,W){
     const y=this.H-this.gh;
     if(!this._g){this._g=ctx.createLinearGradient(0,y,0,this.H);this._g.addColorStop(0,'#1a0a3e');this._g.addColorStop(1,'#0a0520');}
@@ -780,15 +780,15 @@ class Bird{
     this.vy=-grav*10.5*flapMult;this.wa=-.8;SFX.flap();
   }
   stun(){this.stunned=true;this.vy=2;SFX.die();}
-  update(grav,H,gh){
-    this.ph+=.07;
+  update(grav,H,gh,dtf=1){
+    this.ph+=.07*dtf;
     if(!this.alive){
-      this.vy+=grav;this.y+=this.vy;
+      this.vy+=grav*dtf;this.y+=this.vy*dtf;
       if(!isFinite(this.y))this.y=H-gh-this.sz/2;
-      this.angle=Math.min(1.5,this.angle+.08);
+      this.angle=Math.min(1.5,this.angle+.08*dtf);
       const gy=H-gh-this.sz/2;if(this.y>=gy){this.y=gy;this.vy=0;}return;
     }
-    this.vy+=grav;this.y+=this.vy;
+    this.vy+=grav*dtf;this.y+=this.vy*dtf;
     if(!isFinite(this.y))this.y=this.sy;
     this.angle=Math.max(-.5,Math.min(1.2,this.vy*.07));
     if(this.y-this.sz/2<=0){this.y=this.sz/2;this.vy=0;if(!this.stunned)this.stun();return;}
@@ -1244,7 +1244,7 @@ class Bird{
 
 class Pipe{
   constructor(x,gap,gy,W,H,gh,pw){this.x=x;this.gap=gap;this.gy=gy;this.W=W;this.H=H;this.gh=gh;this.pw=pw;this.scored=false;this.speed=0;}
-  update(){this.x-=this.speed;}
+  update(dtf=1){this.x-=this.speed*dtf;}
   gone(){return this.x+this.pw<0;}
   draw(ctx){
     const pw=this.pw,ch=pw*.28,tb=this.gy-this.gap/2,bt=this.gy+this.gap/2,gt=this.H-this.gh;
@@ -1273,6 +1273,8 @@ class Game{
     this.state='menu';
     this.parts=[];this.coinDrops=[];
     this.flash=0;
+    this.scUsedThisGame=false;
+    this.reviveCountdown=0;
     this._build(W,H);
   }
   _build(W,H){
@@ -1316,6 +1318,8 @@ class Game{
     this.pipeGap=this.basePG;this.sepPx=this.W*.75;this.nextPX=this.W+this.pw;
     this.wi=0;this.wt=1;this.wTransing=false;this.wLabelA=0;this.wLabelT=0;
     this._bgG=null;this._bgGK='';
+    this.scUsedThisGame=false; // 1 seule SC par partie
+    this.reviveCountdown=0;
     this.state='playing';
     SV.games++;saveSave();
     showScreen(null);
@@ -1326,19 +1330,28 @@ class Game{
 
 
   revive(){
-    // Ressusciter l'oiseau à sa position actuelle
-    this.bird.alive=true;
-    this.bird.stunned=false;
-    this.bird.vy=-this.baseGrav*8; // petit boost vers le haut
-    this.bird.dt=0;
-    this.bird.angle=0;
+    // Lance un compte à rebours de 3 secondes avant de ressusciter
+    this.scUsedThisGame=true;
+    this.reviveCountdown=3000; // ms
+    this._reviveCd=3; // valeur affichée
     this.state='playing';
     document.getElementById('hud').classList.add('playing');
-    SFX.buy(); vib(30);
-    // Effacer les tuyaux proches pour laisser de l'espace
-    this.pipes=this.pipes.filter(p=>p.x>this.W*.3);
+  }
+
+  _doRevive(){
+    // Téléporte l'oiseau au centre de l'écran
+    this.bird.x=this.W*.25;
+    this.bird.y=this.H*.45; // milieu de l'écran
+    this.bird.vy=-this.baseGrav*8;
+    this.bird.alive=true;
+    this.bird.stunned=false;
+    this.bird.dt=0;
+    this.bird.angle=0;
+    // Efface les tuyaux proches
+    this.pipes=this.pipes.filter(p=>p.x>this.W*.5);
     this.parts=[];
-    this.flash=0;
+    this.flash=8;
+    SFX.buy(); vib(30);
   }
 
   tap(){
@@ -1375,25 +1388,44 @@ class Game{
 
   lastTs=0;
   update(ts){
-    const dt=Math.min(ts-this.lastTs,50);this.lastTs=ts;
+    // Normalise le delta-time : jamais plus de 33ms (30fps minimum).
+    // Cela évite le glitch "mode économie d'énergie" où le navigateur
+    // suspend le tab puis reprend avec un énorme saut de timestamp.
+    const raw=ts-this.lastTs;
+    const dt=Math.min(raw,33); // cap strict à ~30fps
+    this.lastTs=ts;
+    // Facteur de normalisation par rapport à 60fps (16.67ms)
+    const dtf=dt/16.667;
+
     this.stars.update();
     if(this.state!=='playing')return;
+
+    // Compte à rebours de revive (bloque le jeu pendant 3s)
+    if(this.reviveCountdown>0){
+      this.reviveCountdown-=dt;
+      if(this.reviveCountdown<=0){
+        this.reviveCountdown=0;
+        this._doRevive();
+      }
+      return; // on ne joue pas pendant le compte à rebours
+    }
+
     this.fc++;
     this._applyDiff();
 
     const grav=this.grav();
     const mv=this.bird.alive&&!this.bird.stunned;
 
-    if(mv){for(const p of this.pipes){p.speed=this.speed;p.update();}}
+    if(mv){for(const p of this.pipes){p.speed=this.speed;p.update(dtf);}}
     this.pipes=this.pipes.filter(p=>!p.gone());
     if(mv){
       if(!this.pipes.length){this.nextPX=this.W+this.pw;this.spawnPipe();}
-      this.nextPX-=this.speed;
+      this.nextPX-=this.speed*dtf;
       if(this.nextPX<=this.W+this.pw){this.nextPX=this.W+this.pw+this.sepPx;this.spawnPipe();}
     }
 
-    this.bird.update(grav,this.H,this.gh);
-    this.ground.update(this.speed,mv);
+    this.bird.update(grav,this.H,this.gh,dtf);
+    this.ground.update(this.speed,mv,dtf);
 
     if(this.bird.alive){
       for(const p of this.pipes){
@@ -1420,8 +1452,8 @@ class Game{
       }
     }
 
-    if(this.wTransing){this.wt=Math.min(1,this.wt+.012);if(this.wt>=1)this.wTransing=false;}
-    if(this.wLabelT>0){this.wLabelT--;const t=this.wLabelT/120;this.wLabelA=t<.2?t/.2:t>.8?(1-t)/.2:1;}
+    if(this.wTransing){this.wt=Math.min(1,this.wt+.012*dtf);if(this.wt>=1)this.wTransing=false;}
+    if(this.wLabelT>0){this.wLabelT-=dtf;const t=Math.max(0,this.wLabelT)/120;this.wLabelA=t<.2?t/.2:t>.8?(1-t)/.2:1;}
     else this.wLabelA=0;
 
     if(this.bird.alive&&!this.bird.stunned){
@@ -1432,7 +1464,7 @@ class Game{
     }
 
     if(!this.bird.alive){
-      this.bird.dt++;
+      this.bird.dt+=dtf;
       if(this.bird.dt>=90){
         this.state='dead';
         document.getElementById('hud').classList.remove('playing');
@@ -1503,6 +1535,28 @@ class Game{
     if(this.parts.length){for(const p of this.parts)p.draw(ctx);ctx.globalAlpha=1;}
     for(const cd of this.coinDrops)cd.draw(ctx);
     ctx.globalAlpha=1;
+
+    // ── Compte à rebours de revive ──
+    if(this.reviveCountdown>0){
+      const n=Math.ceil(this.reviveCountdown/1000);
+      ctx.save();
+      ctx.fillStyle='rgba(0,0,0,.5)';
+      ctx.fillRect(0,0,this.W,this.H);
+      const fs=Math.round(Math.min(this.W,this.H)*.22);
+      ctx.font=`bold ${fs}px 'Press Start 2P',monospace`;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      // Halo
+      ctx.shadowColor='#00f5ff';ctx.shadowBlur=40;
+      ctx.fillStyle='#00f5ff';
+      ctx.fillText(n,this.W/2,this.H/2);
+      ctx.shadowBlur=0;
+      // Sous-texte
+      const fs2=Math.round(Math.min(this.W,this.H)*.04);
+      ctx.font=`bold ${fs2}px 'Press Start 2P',monospace`;
+      ctx.fillStyle='rgba(255,255,255,.7)';
+      ctx.fillText('PRÊT ?',this.W/2,this.H/2+fs*.65);
+      ctx.restore();
+    }
   }
 
   loop(ts=0){
@@ -1520,20 +1574,12 @@ function showScreen(id){
 }
 function showDeadScreen(score,coins){
   _pendingScore=score;
-  // Vérifier si on propose une seconde chance
-  const hasSC=(SV.secondChances||0)>0;
+  // Vérifier si on propose une seconde chance (dispo ET pas encore utilisée cette partie)
+  const hasSC=(SV.secondChances||0)>0 && !game.scUsedThisGame;
   if(hasSC){
-    // Proposer la seconde chance avant le game over
     offerSecondChance(
-      // onContinue : le joueur accepte
-      function(){
-        // Relancer la partie depuis la position actuelle
-        game.revive();
-      },
-      // onRefuse : afficher l'écran de mort normal
-      function(){
-        _showDeadScreenFinal(score,coins);
-      }
+      function(){game.revive();},
+      function(){_showDeadScreenFinal(score,coins);}
     );
   } else {
     _showDeadScreenFinal(score,coins);
